@@ -1,0 +1,15 @@
+E:\MyProjects\FiveLetter\bin\Debug\net7.0\FiveLetter.exe
+E:\MyProjects\FiveLetter\bin\Debug\net7.0\FiveLetter.deps.json
+E:\MyProjects\FiveLetter\bin\Debug\net7.0\FiveLetter.runtimeconfig.json
+E:\MyProjects\FiveLetter\bin\Debug\net7.0\FiveLetter.dll
+E:\MyProjects\FiveLetter\bin\Debug\net7.0\FiveLetter.pdb
+E:\MyProjects\FiveLetter\obj\Debug\net7.0\FiveLetter.csproj.AssemblyReference.cache
+E:\MyProjects\FiveLetter\obj\Debug\net7.0\FiveLetter.GeneratedMSBuildEditorConfig.editorconfig
+E:\MyProjects\FiveLetter\obj\Debug\net7.0\FiveLetter.AssemblyInfoInputs.cache
+E:\MyProjects\FiveLetter\obj\Debug\net7.0\FiveLetter.AssemblyInfo.cs
+E:\MyProjects\FiveLetter\obj\Debug\net7.0\FiveLetter.csproj.CoreCompileInputs.cache
+E:\MyProjects\FiveLetter\obj\Debug\net7.0\FiveLetter.dll
+E:\MyProjects\FiveLetter\obj\Debug\net7.0\refint\FiveLetter.dll
+E:\MyProjects\FiveLetter\obj\Debug\net7.0\FiveLetter.pdb
+E:\MyProjects\FiveLetter\obj\Debug\net7.0\FiveLetter.genruntimeconfig.cache
+E:\MyProjects\FiveLetter\obj\Debug\net7.0\ref\FiveLetter.dll
