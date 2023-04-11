@@ -2,6 +2,7 @@
 using System.Linq;
 using System.IO;
 using UserCommands;
+using Tests;
 
 namespace FiveLetters;
 
@@ -34,6 +35,8 @@ public static class Program
 
     public static void Main()
     {
+        Test.RunTest();
+        return;
         //SelectFivelettersWords("букваС1.txt","5с1.txt");
         //SelectFivelettersWords("букваС2.txt","5с2.txt");
         //AllToOneFile();
@@ -56,6 +59,8 @@ public static class Program
         uc.GetCommand(txt);
         Console.WriteLine(uc.cmdType);
     }
+
+    
 
     // запускаем цикл обработки пользовательских комманд
     private static void UserCommandLoop()
@@ -193,7 +198,7 @@ public static class Program
 
     private static command CheckCommandFormat(string input, command cmd)            // !!!!!!!!!!!!!!
     {
-        return command.position;
+        //return command.position;
 
         return command.uncknown;
     }

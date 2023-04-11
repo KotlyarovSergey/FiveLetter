@@ -19,6 +19,7 @@ public class UserCommand
     public char[] letters;
     public char letter;
     public int position;
+    public int number;
     public bool avail;
 
     public UserCommand()
@@ -32,73 +33,113 @@ public class UserCommand
 
     public command GetCommand(string text)
     {
-        command result = command.uncknown;
+        //command result = command.uncknown;
+        text = text.Trim().ToLower();
+        string[] parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0)
+        {
+            this.cmdType = command.uncknown;
+            return command.uncknown;
+        }
+        string cmd = parts[0];
 
-        if (text == "help" || text == "пом") result = command.help;
-        else if (text == "reset" || text == "сброс") result =  command.reset;
-        else if (text.IndexOf("excl") == 0 || text.IndexOf("искл") == 0) result =  command.exclude;
-        else if (text.IndexOf("req") == 0 || text.IndexOf("надо") == 0) result =  command.require;
-        else if (text.IndexOf("pos") == 0 || text.IndexOf("поз") == 0) result = command.position;
-        else if (text == "show" || text == "показ") result =  command.show;
-        else if (text == "rand" || text == "случ") result =  command.random;
-        else if (text == "qu" || text == "вых") result =  command.quit;
+        if (cmd == "help" || cmd == "пом") return ParseSimple(text, command.help);
+        else if (cmd == "reset" || cmd == "сброс") return ParseSimple(text, command.reset);
+        else if (cmd == "excl" || cmd == "искл") return ParseWithCharArray(text, command.exclude);
+        else if (cmd == "req" || cmd == "надо") return ParseWithCharArray(text, command.require);
+        else if (cmd == "pos" || cmd == "поз") return ParseToPosition(text, command.position);
+        else if (cmd == "show" || cmd == "показ") return ParseSimple(text, command.show);
+        else if (cmd == "rand" || cmd == "случ") return ParseWithNumber(text, command.random);
+        else if (cmd == "qu" || cmd == "вых") return ParseSimple(text, command.quit);
         //Console.WriteLine(input);
-        
-        // разбираем комманду на аргументы
-        return Parse(text, result);
+
+        return command.uncknown;
     }
 
-    private command Parse(string text, command cmdType)
-    {   
-        command result = cmdType;
-        switch (cmdType)
-        {
-            case command.help:
-            case command.reset:
-            case command.show:
-            case command.random:
-            case command.quit:
-                this.cmdType = cmdType;
-                return cmdType;
-            //break;
-        }
 
-        // разбираем command.exclude
-        if(cmdType == command.exclude)
-        {
-
-
-        }
-
-
-
-        this.cmdType = cmdType;
-        return result;
-    }
-
-    private char[] GetCharParams(string input)               /// !!!!!!!!!!!!!!!!!!!!!
+    /// для комманды сортировки по позиции символа
+    private command ParseToPosition(string text, command cmdType)
     {
-        // 1. обрезаем комманду, оставляем только символы
-        int del = 4;
-        if (input.IndexOf("req") == 0) del = 3;
-        //else if (input.IndexOf("req") == 0)    del=3;
-        input = (input.Remove(0, del)).Trim();
+        // разделяем текст на части по пробелам
+        string[] parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        // 2. создаем из остатка массив символов
-        char[] chars = input.ToCharArray();
+        // количество частей должно быть 3 или 4
+		if (parts.Length < 3 || parts.Length > 4) return command.uncknown;
+        // если 4, то дожен быть параметр "не"
+		if (parts.Length == 4 && (parts[2] != "не" && parts[2] != "no")) return command.uncknown;
 
-        // 3. из этого массива оставляем только "наши" буквы
-        char[] result = new char[0];
-        foreach (char ch in chars)
-        {
-            if (ch >= 'а' && ch <= 'я')
-            {
-                Array.Resize(ref result, result.Length + 1);
-                result[result.Length - 1] = ch;
-            }
-        }
+		//if (parts[0] != "pos" && parts[0] != "поз") return command.uncknown;
 
-        return result;
+        // вторая часть это символ, поэтому длинна её должна быть 1 символ
+		if (parts[1].Length != 1) return command.uncknown;
+		// и этот символ должне быть буквой русского алфавита
+        char letter = parts[1][0];
+		if (letter < 'а' || letter > 'я') return command.uncknown;
+
+        // последей частью должна быть позиция символла, поэтому это однин символ и он - число от 1 до 5
+		if (parts[parts.Length - 1].Length > 1) return command.uncknown;
+		char numChar = parts[parts.Length - 1][0];
+		if (numChar < '1' || numChar > '5') return command.uncknown;
+		
+        int index = numChar - '0';
+        if(parts.Length == 3) this.position = index;
+        else this.position = 0 - index;
+
+        this.letter = letter;
+
+        return cmdType;
     }
 
+
+    /// для простых команд без аргументов
+    private command ParseSimple(string text, command cmdType)
+    {
+        string[] parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return cmdType;
+        else return command.uncknown;
+    }
+
+
+    /// для комманд со списком символов в качестве аргумента (искл, надо)
+    private command ParseWithCharArray(string text, command cmdType)
+    {
+
+        // разделяем текст на части по пробелам
+        string[] parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        // если частей всего 1, то аргументов нет
+        if (parts.Length == 1) return command.uncknown;
+
+        string arguments = string.Empty;
+        for (int i = 1; i < parts.Length; i++) arguments += parts[i];      // собираем аргументы обратно в строку
+        char[] symbols = arguments.ToCharArray();                          // и разбираем на символы
+
+        // все символы должны быть буквать русского алфавита
+        foreach (char item in symbols) if (item < 'а' || item > 'я') return command.uncknown;
+
+        this.letters = symbols;     // присваиваем результат в поле letters
+        return cmdType;     // возвращаем тип комманады в знак положительного завершения проверки
+    }
+
+    /// для команд с целочистленным аргументом 
+    private command ParseWithNumber(string text, command cmdType)
+    {
+        // разделяем текст на части по пробелам
+        string[] parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        
+        // должно быть всего 2 части: команда и число
+        // для "случ" может быть исключение - нет аргументов, значит число = 1
+        if (cmdType == command.random && parts.Length == 1 )
+        {
+            this.number = 1;
+            return cmdType;
+        }
+
+        if (parts.Length != 2) return command.uncknown;
+
+        // вторая часть (аргумент) должен быть числом (положительным)
+        foreach (char item in parts[1].ToCharArray()) if (item < '0' || item > '9') return command.uncknown;
+
+        this.number = int.Parse(parts[1]);
+        return cmdType;
+    }
 }
