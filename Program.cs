@@ -301,12 +301,34 @@ public static class Program
     // добавляем буквы к списку
     private static void AddAndSortLetters(ref char[] exist, char[] added)
     {
-        char[] newList = new char[exist.Length + added.Length];
-        exist.CopyTo(newList, 0);
-        added.CopyTo(newList, exist.Length);
-        //  надо исключить дубликаты        !!!!!!!!!!!!!!!!!
-        Array.Sort(newList);
-        exist = newList;
+        char[] temp = new char[exist.Length];
+        exist.CopyTo(temp, 0);
+        
+        for(int i = 0; i < added.Length; i++)
+        {
+            bool isExist = false;
+            foreach(char ch in temp)
+            {
+                if(added[i] == ch) 
+                {
+                    isExist = true;
+                    break;
+                }
+            }
+            if(!isExist) AddItem(ref temp, added[i]);
+        }
+        
+        Array.Sort(temp);
+        exist = temp;
+    }
+
+    private static void AddItem(ref char[] array, char item)
+    {
+        int len = array.Length;
+        char[] temp = new char[len + 1];
+        for (int i = 0; i < len; i++) temp[i] = array[i];
+        temp[len] = item;
+        array = temp;
     }
 
     // печатаем список слов
