@@ -57,10 +57,6 @@ public static class Program
 
         PrintHelp();
         ReadUserCommandsLoop();
-        // UserCommand uc = new UserCommand();
-        // string txt = Console.ReadLine()!;
-        // uc.GetCommand(txt);
-        // Console.WriteLine(uc.cmdType);
     }
 
 
@@ -227,70 +223,6 @@ public static class Program
 
         return command.uncknown;
     }
-
-    // Извлекаем символы из комманды поользователя
-    /*    private static char[] GetParametres(string input)               /// !!!!!!!!!!!!!!!!!!!!!
-        {
-            // 1. обрезаем комманду, оставляем только символы
-            int del = 4;
-            if (input.IndexOf("req") == 0) del = 3;
-            //else if (input.IndexOf("req") == 0)    del=3;
-            input = (input.Remove(0, del)).Trim();
-
-            // 2. создаем из остатка массив символов
-            char[] chars = input.ToCharArray();
-
-            // 3. из этого массива оставляем только "наши" буквы
-            char[] result = new char[0];
-            foreach (char ch in chars)
-            {
-                if (ch >= 'а' && ch <= 'я')
-                {
-                    Array.Resize(ref result, result.Length + 1);
-                    result[result.Length - 1] = ch;
-                }
-            }
-
-            return result;
-        }
-    */
-    //private static char[] GetParametres(string input, command cmd)      // !!!!!!!!!!!!!!!!!!!!!!!
-    /*    private static (char, int, bool) GetLetterPosParam(string input)       // !!!!!!!!!!!!!!!!!!!!!!!
-        {
-
-
-            // 
-            char letter = 'Ё';
-            int position = 0;
-            bool need = true;
-
-            if (input.IndexOf("no") > 0 || input.IndexOf("не") > 0)
-            {
-                int pos = input.IndexOf("не");
-                if (pos < 0) pos = input.IndexOf("no");
-                input = input.Remove(0, pos + 2).Trim();
-                need = false;
-            }
-            else input = input.Remove(0, 3).Trim();
-            Console.WriteLine(input);
-
-            // // берем первую букву после комманды
-            // input = input.Remove(0, 3).Trim().Remove(0, 2).Trim();
-            // resChar = input[0];
-            // // и первую цифру после буквы
-            // foreach (char item in input)
-            // {
-            //     if(item >= 1 && item <=5)
-            //     {
-            //         resInt = int.Parse(new string(item,1));
-            //         break;
-            //     }
-            // }
-
-
-            return (letter, position, need);
-        }
-    */
 
     // Печатаем хелп
     private static void PrintHelp()
