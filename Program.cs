@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.IO;
-using UserCommands;
+//using UserCommands;
 using Tests;
 
 namespace FiveLetters;
@@ -9,6 +9,7 @@ namespace FiveLetters;
 public static class Program
 {
     //const string DICTONARY = "5letters.txt";
+    //const string DICTONARY = "5lettersshort.txt";
     const string DICTONARY = "5letters_real.txt";
     const string HELPTEXT = "\thelp (пом) - вывести спискок комманд\n" +
                             "\treset (сброс) - сбросить все фильтры\n" +
@@ -18,6 +19,7 @@ public static class Program
                             "\tshow (показ)- показать выбранные слова\n" +
                             "\trand (случ)- показать случайное слово\n" +
                             "\tqu (вых) - выход";
+    const string ASKHUNDREDWORDS = "В выборке больше 100 слов. Показать все? ( Y | N ): ";
     static string[] allWords = new string[0];  // = ReadAllWords(allWordsFileName);
 
     enum command
@@ -35,8 +37,9 @@ public static class Program
 
     public static void Main()
     {
-        Test.RunTest();
-        return;
+        // Test.RunTest();
+        // return;
+
         //SelectFivelettersWords("букваС1.txt","5с1.txt");
         //SelectFivelettersWords("букваС2.txt","5с2.txt");
         //AllToOneFile();
@@ -50,20 +53,20 @@ public static class Program
 
         //Console.Clear();
         Console.WriteLine("Загружено {0} слов ", allWords.Length);
-        Console.WriteLine("Случайное слово: {0}", GetRandonWord(allWords));
+        Console.WriteLine("Случайное слово: {0}", GetRandonWord(allWords, 1));
 
         PrintHelp();
-        //UserCommandLoop();
-        UserCommand uc = new UserCommand();
-        string txt = Console.ReadLine()!;
-        uc.GetCommand(txt);
-        Console.WriteLine(uc.cmdType);
+        ReadUserCommandsLoop();
+        // UserCommand uc = new UserCommand();
+        // string txt = Console.ReadLine()!;
+        // uc.GetCommand(txt);
+        // Console.WriteLine(uc.cmdType);
     }
 
-    
+
 
     // запускаем цикл обработки пользовательских комманд
-    private static void UserCommandLoop()
+    private static void ReadUserCommandsLoop()
     {
         string[] filtredWords = new string[allWords.Length];
         allWords.CopyTo(filtredWords, 0);
@@ -71,37 +74,41 @@ public static class Program
         char[] required = new char[0];      // необходимые символы
         bool positionExcept = false;        // исключения по позициям символов
 
-        string userText = string.Empty;
-        bool exit = false;
-        do
-        {
-            Console.Write("Введите комманду: ");
-            userText = Console.ReadLine()!.Trim();
+        UserCommand uc = new UserCommand();
+        //string userText = string.Empty;
+        //bool exit = false;
 
-            command com = GetCommand(userText);
+        Console.Write("Введите комманду: ");
+        string userText = Console.ReadLine()!.Trim();
+        uc.GetCommand(userText);
+
+        //do
+        while (uc.cmdType != UserCommand.command.quit)
+        {
+            //Console.Write("Введите комманду: ");
+            //userText = Console.ReadLine()!.Trim();
+
+            //command com = GetCommand(userText);
+            //UserCommand.command com = uc.GetCommand(userText);
+
             //Console.WriteLine(com.ToString());
-            switch (com)
+            switch (uc.cmdType)
             {
-                case command.help:          // +++
+                case UserCommand.command.help:          // +++
                     // пишем хелп
                     PrintHelp();
                     break;
-                case command.show:          // +++
+                case UserCommand.command.show:          // +++
                     // показываем выборку
-                    if (filtredWords.Length > 100)   // если слов много надо уточнить
-                    {
-                        Console.Write("В выборке больше ста слов. Показать? ( Y | N ): ");
-                        string ansver = Console.ReadLine()!;
-                        ansver = ansver.Trim().ToUpper();
-                        if (ansver == "Y") PrintWords(filtredWords);
-                    }
+                    if (filtredWords.Length > 100 &&    // если слов много надо уточнить
+                         AckUser(ASKHUNDREDWORDS)) PrintWords(filtredWords);
                     else PrintWords(filtredWords);
                     break;
-                case command.random:        // +++
+                case UserCommand.command.random:        // +++
                     // выдаём случайное слово
-                    Console.WriteLine(GetRandonWord(filtredWords));
+                    Console.WriteLine(GetRandonWord(filtredWords, uc.number));
                     break;
-                case command.reset:         // +++
+                case UserCommand.command.reset:         // +++
                     // сбрасываем сортировки
                     excluded = new char[0];
                     required = new char[0];
@@ -110,12 +117,12 @@ public static class Program
                     positionExcept = false;
                     PrintStatus(filtredWords, excluded, required, positionExcept);
                     break;
-                case command.quit:          // +++
+                case UserCommand.command.quit:          // +++
                     // выходим
-                    exit = true;
                     break;
-                case command.require:
-                    char[] reqChars = GetParametres(userText);
+                case UserCommand.command.require:       // +++
+                    //char[] reqChars = GetParametres(userText);
+                    char[] reqChars = uc.letters;
                     // фильтруем по необходимым буквам
                     RequiredLetters(ref filtredWords, reqChars);
                     // добавляем отфильтрованные буквы в общий список
@@ -123,8 +130,9 @@ public static class Program
                     // Выводим собщение
                     PrintStatus(filtredWords, excluded, required, positionExcept);
                     break;
-                case command.exclude:
-                    char[] exclChars = GetParametres(userText);
+                case UserCommand.command.exclude:
+                    //char[] exclChars = GetParametres(userText);
+                    char[] exclChars = uc.letters;
                     // фильтруем по лишним буквам
                     ExcludeLetters(ref filtredWords, exclChars);
                     // добавляем отфильтрованные буквы в общий список
@@ -132,13 +140,15 @@ public static class Program
                     // Выводим собщение
                     PrintStatus(filtredWords, excluded, required, positionExcept);
                     break;
-                case command.position:                  // !!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    char letter;    // исключаемая буква
-                    int position;      // её позиция
-                    bool need;
-                    (letter, position, need) = GetLetterPosParam(userText);       // получаем данные из комманды
-                    if (position == 0) break;   // елси позиция == 0 что-то в коммаде не так, выходим
+                case UserCommand.command.position:                  // !!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    char letter = uc.letter;        // исключаемая буква
+                    int position = uc.position;     // её позиция
 
+                    // отсавляем только слова этой букваой необходимым буквам
+                    RequiredLetters(ref filtredWords, new char[] { letter });
+
+                    // фильтруем по позициям
+                    ReqiredPosition(ref filtredWords, letter, position);
 
                     //RequiredLetters(ref filtredWords, letter, position);  // !!!!!!!!!!!!!!
                     positionExcept = true;
@@ -147,14 +157,29 @@ public static class Program
                     // Выводим собщение
                     PrintStatus(filtredWords, excluded, required, positionExcept);
                     break;
-                case command.uncknown:
+                case UserCommand.command.uncknown:
                     // комманда не распознана
-                    Console.WriteLine("Комманда не распознана. Повторите.");
+                    Console.WriteLine("Команда не распознана. Повторите.");
                     break;
             }
-        } while (!exit);
+
+            Console.Write("Введите комманду: ");
+            userText = Console.ReadLine()!.Trim();
+
+            //command com = GetCommand(userText);
+            uc.GetCommand(userText);
+
+            //Console.WriteLine(com.ToString());
+        }// while (!exit);
     }
 
+    private static bool AckUser(string questinon)
+    {
+        Console.Write(questinon);
+        string ansver = Console.ReadLine()!.Trim().ToUpper();
+        if (ansver == "Y") return true;
+        else return false;
+    }
 
     // Печать статуса (всего слов, исключенные и необходимые символы)
     private static void PrintStatus(string[] words, char[] excluded, char[] reqiured, bool posExcept)
@@ -204,68 +229,68 @@ public static class Program
     }
 
     // Извлекаем символы из комманды поользователя
-    private static char[] GetParametres(string input)               /// !!!!!!!!!!!!!!!!!!!!!
-    {
-        // 1. обрезаем комманду, оставляем только символы
-        int del = 4;
-        if (input.IndexOf("req") == 0) del = 3;
-        //else if (input.IndexOf("req") == 0)    del=3;
-        input = (input.Remove(0, del)).Trim();
-
-        // 2. создаем из остатка массив символов
-        char[] chars = input.ToCharArray();
-
-        // 3. из этого массива оставляем только "наши" буквы
-        char[] result = new char[0];
-        foreach (char ch in chars)
+    /*    private static char[] GetParametres(string input)               /// !!!!!!!!!!!!!!!!!!!!!
         {
-            if (ch >= 'а' && ch <= 'я')
+            // 1. обрезаем комманду, оставляем только символы
+            int del = 4;
+            if (input.IndexOf("req") == 0) del = 3;
+            //else if (input.IndexOf("req") == 0)    del=3;
+            input = (input.Remove(0, del)).Trim();
+
+            // 2. создаем из остатка массив символов
+            char[] chars = input.ToCharArray();
+
+            // 3. из этого массива оставляем только "наши" буквы
+            char[] result = new char[0];
+            foreach (char ch in chars)
             {
-                Array.Resize(ref result, result.Length + 1);
-                result[result.Length - 1] = ch;
+                if (ch >= 'а' && ch <= 'я')
+                {
+                    Array.Resize(ref result, result.Length + 1);
+                    result[result.Length - 1] = ch;
+                }
             }
+
+            return result;
         }
-
-        return result;
-    }
-
+    */
     //private static char[] GetParametres(string input, command cmd)      // !!!!!!!!!!!!!!!!!!!!!!!
-    private static (char, int, bool) GetLetterPosParam(string input)       // !!!!!!!!!!!!!!!!!!!!!!!
-    {
-
-
-        // 
-        char letter = 'Ё';
-        int position = 0;
-        bool need = true;
-
-        if (input.IndexOf("no") > 0 || input.IndexOf("не") > 0)
+    /*    private static (char, int, bool) GetLetterPosParam(string input)       // !!!!!!!!!!!!!!!!!!!!!!!
         {
-            int pos = input.IndexOf("не");
-            if (pos < 0) pos = input.IndexOf("no");
-            input = input.Remove(0, pos + 2).Trim();
-            need = false;
-        }
-        else input = input.Remove(0, 3).Trim();
-        Console.WriteLine(input);
-        /*
-        // берем первую букву после комманды
-        input = input.Remove(0, 3).Trim().Remove(0, 2).Trim();
-        resChar = input[0];
-        // и первую цифру после буквы
-        foreach (char item in input)
-        {
-            if(item >= 1 && item <=5)
+
+
+            // 
+            char letter = 'Ё';
+            int position = 0;
+            bool need = true;
+
+            if (input.IndexOf("no") > 0 || input.IndexOf("не") > 0)
             {
-                resInt = int.Parse(new string(item,1));
-                break;
+                int pos = input.IndexOf("не");
+                if (pos < 0) pos = input.IndexOf("no");
+                input = input.Remove(0, pos + 2).Trim();
+                need = false;
             }
+            else input = input.Remove(0, 3).Trim();
+            Console.WriteLine(input);
+
+            // // берем первую букву после комманды
+            // input = input.Remove(0, 3).Trim().Remove(0, 2).Trim();
+            // resChar = input[0];
+            // // и первую цифру после буквы
+            // foreach (char item in input)
+            // {
+            //     if(item >= 1 && item <=5)
+            //     {
+            //         resInt = int.Parse(new string(item,1));
+            //         break;
+            //     }
+            // }
+
+
+            return (letter, position, need);
         }
-        */
-
-        return (letter, position, need);
-    }
-
+    */
 
     // Печатаем хелп
     private static void PrintHelp()
@@ -275,9 +300,25 @@ public static class Program
 
 
     // исключаем по позициям
-    private static void ReqiredPosition(ref string[] words, char required, bool on)
+    private static void ReqiredPosition(ref string[] words, char letter, int position)
     {
+        string[] tempWords = new string[words.Length];
+        int len = 0;
 
+        foreach (string word in words)
+        {
+            int pos = position > 0 ? position - 1 : -1 - position;
+            if (position > 0 && word[pos] == letter || 
+                position < 0 && word[pos] != letter)
+            {
+                    tempWords[len] = word;
+                    len++;
+            }
+        }
+
+        string[] filtred = new string[len];
+        for (int i = 0; i < len; i++) filtred[i] = tempWords[i];
+        words = filtred;
     }
 
     // выбираем только слова содержащие указанные буквы
@@ -303,13 +344,8 @@ public static class Program
         words = filtred;
     }
 
-    private static void RequiredLetters(ref string[] words, char letter, int pos, bool need)
-    {
 
-
-    }
-
-    // Проверяем на наличие всех букв
+    // Проверяем на наличие всех букв в слове
     private static bool AllCharsExist(string word, char[] letters)
     {
         foreach (char ch in letters)
@@ -344,6 +380,8 @@ public static class Program
     // печатаем список слов
     private static void PrintWords(string[] words)
     {
+        // Console.WriteLine("Начальный массив: [" + string.Join(", ", array) + "]");
+
         int n = 0;
         foreach (string w in words)
         {
@@ -352,6 +390,7 @@ public static class Program
             n++;
         }
         Console.WriteLine();
+
     }
 
     // выбираем слова без указанных букв
@@ -394,9 +433,17 @@ public static class Program
 
 
     // выбираем случайное слово из массива
-    private static string GetRandonWord(string[] words)
+    private static string GetRandonWord(string[] words, int count)
     {
-        return words[new Random().Next(words.Length)];
+        string result = string.Empty;
+        if (count > 0)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                result += words[new Random().Next(words.Length)] + " \t ";
+            }
+        }
+        return result;
     }
 
     // делаем строковый массив из слов(строк) в файле

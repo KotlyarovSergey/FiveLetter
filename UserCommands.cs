@@ -1,4 +1,4 @@
-namespace UserCommands;
+//namespace UserCommands;
 
 public class UserCommand
 {
@@ -33,7 +33,7 @@ public class UserCommand
 
     public command GetCommand(string text)
     {
-        //command result = command.uncknown;
+        this.cmdType = command.uncknown;
         text = text.Trim().ToLower();
         string[] parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 0)
@@ -64,29 +64,30 @@ public class UserCommand
         string[] parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         // количество частей должно быть 3 или 4
-		if (parts.Length < 3 || parts.Length > 4) return command.uncknown;
+        if (parts.Length < 3 || parts.Length > 4) return command.uncknown;
         // если 4, то дожен быть параметр "не"
-		if (parts.Length == 4 && (parts[2] != "не" && parts[2] != "no")) return command.uncknown;
+        if (parts.Length == 4 && (parts[2] != "не" && parts[2] != "no")) return command.uncknown;
 
-		//if (parts[0] != "pos" && parts[0] != "поз") return command.uncknown;
+        //if (parts[0] != "pos" && parts[0] != "поз") return command.uncknown;
 
         // вторая часть это символ, поэтому длинна её должна быть 1 символ
-		if (parts[1].Length != 1) return command.uncknown;
-		// и этот символ должне быть буквой русского алфавита
+        if (parts[1].Length != 1) return command.uncknown;
+        // и этот символ должне быть буквой русского алфавита
         char letter = parts[1][0];
-		if (letter < 'а' || letter > 'я') return command.uncknown;
+        if (letter < 'а' || letter > 'я') return command.uncknown;
 
         // последей частью должна быть позиция символла, поэтому это однин символ и он - число от 1 до 5
-		if (parts[parts.Length - 1].Length > 1) return command.uncknown;
-		char numChar = parts[parts.Length - 1][0];
-		if (numChar < '1' || numChar > '5') return command.uncknown;
-		
+        if (parts[parts.Length - 1].Length > 1) return command.uncknown;
+        char numChar = parts[parts.Length - 1][0];
+        if (numChar < '1' || numChar > '5') return command.uncknown;
+
         int index = numChar - '0';
-        if(parts.Length == 3) this.position = index;
+        if (parts.Length == 3) this.position = index;
         else this.position = 0 - index;
 
         this.letter = letter;
 
+        this.cmdType = cmdType;
         return cmdType;
     }
 
@@ -95,8 +96,10 @@ public class UserCommand
     private command ParseSimple(string text, command cmdType)
     {
         string[] parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 1) return cmdType;
-        else return command.uncknown;
+        if (parts.Length != 1) return command.uncknown;
+
+        this.cmdType = cmdType;
+        return cmdType;
     }
 
 
@@ -117,6 +120,7 @@ public class UserCommand
         foreach (char item in symbols) if (item < 'а' || item > 'я') return command.uncknown;
 
         this.letters = symbols;     // присваиваем результат в поле letters
+        this.cmdType = cmdType;
         return cmdType;     // возвращаем тип комманады в знак положительного завершения проверки
     }
 
@@ -125,10 +129,10 @@ public class UserCommand
     {
         // разделяем текст на части по пробелам
         string[] parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        
+
         // должно быть всего 2 части: команда и число
         // для "случ" может быть исключение - нет аргументов, значит число = 1
-        if (cmdType == command.random && parts.Length == 1 )
+        if (cmdType == command.random && parts.Length == 1)
         {
             this.number = 1;
             return cmdType;
@@ -140,6 +144,7 @@ public class UserCommand
         foreach (char item in parts[1].ToCharArray()) if (item < '0' || item > '9') return command.uncknown;
 
         this.number = int.Parse(parts[1]);
+        this.cmdType = cmdType;
         return cmdType;
     }
 }
